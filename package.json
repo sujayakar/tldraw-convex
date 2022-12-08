@@ -1,0 +1,41 @@
+{
+  "version": "1.7.15",
+  "name": "@tldraw/tldraw-example",
+  "description": "An advanced example project for @tldraw/core.",
+  "author": "@steveruizok",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tldraw/tldraw.git"
+  },
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite --port 5420",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "TIMING=1 eslint src/ --ext .ts,.tsx",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "dependencies": {
+    "@auth0/auth0-react": "^1.12.0",
+    "@liveblocks/client": "^0.17.7",
+    "@liveblocks/react": "^0.17.7",
+    "@tldraw/core": "1.20.2",
+    "@tldraw/tldraw": "1.26.3",
+    "convex": "^0.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router": "^6.3.0",
+    "react-router-dom": "^6.3.0",
+    "vite-tsconfig-paths": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.0.0",
+    "typescript": "^4.6.4",
+    "vite": "^3.0.0"
+  }
+}
