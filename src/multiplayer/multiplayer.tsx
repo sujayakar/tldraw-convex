@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { TDUserStatus, Tldraw } from '@tldraw/tldraw'
+import { useAuth0 } from '@auth0/auth0-react'
+import { TDUserStatus, Tldraw, TldrawApp } from '@tldraw/tldraw'
+import { useConvex, useMutation } from 'convex/_generated/react'
 import * as React from 'react'
 import { RoomProvider } from './liveblocks.config'
 import { useMultiplayerState } from './useMultiplayerState'
@@ -9,7 +11,7 @@ const roomId = 'mp-test-8'
 /*
 This example shows how to integrate TLDraw with a multiplayer room
 via LiveBlocks. You could use any other service instead—the important
-part is to get data from the Tldraw app when its document changes 
+part is to get data from the Tldraw app when its document changes
 and update it when the server's synchronized document changes.
 
 Warning: Keeping images enabled for multiplayer applications
@@ -40,26 +42,66 @@ export function Multiplayer() {
   )
 }
 
+function Logout() {
+  const { logout, user } = useAuth0();
+  if (!user) {
+    return <></>
+  }
+  return (
+    <div>
+      <button
+        className="logoutButton"
+        onClick={() => logout({ returnTo: window.location.origin })}
+      >
+        Logout ({user!.name})
+      </button>
+    </div>
+  );
+}
+
 function Editor({ roomId }: { roomId: string }) {
   const { error, ...events } = useMultiplayerState(roomId)
   if (error) return <div>Error: {error.message}</div>
 
+  const [app, setApp] = React.useState<TldrawApp>();
+  const handleMount = React.useCallback((app: TldrawApp) => {
+    setApp(app);
+  }, [setApp]);
+  const generateUploadUrl = useMutation("storage:generateUploadUrl");
+  const getUrl = useMutation("storage:getUrl");
+  const onAssetCreate = React.useCallback(async (app: TldrawApp, file: File, id: string) => {
+    const uploadUrl = await generateUploadUrl();
+    console.log("uploading", uploadUrl, file);
+    const result = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {"Content-Type": file.type},
+      body: file,
+    });
+    const { storageId } = await result.json();
+    console.log("storageId", storageId);
+    const url = await getUrl(storageId);
+    console.log("url", url);
+    return url!;
+  }, []);
+  const onAssetDelete = React.useCallback((app: TldrawApp, id: string) => {
+    console.log("deleting", id);
+    return true;
+  }, []);
   return (
-    <div className="tldraw">
-      <Tldraw
-        showPages={false}
-        {...events}
-        disableAssets={true}
-        // disableAssets={false}
-        // onAssetCreate={async (file: File, id: string) => {
-        //   const url = await uploadToStorage(file, id)
-        //   return url
-        // }}
-        // onAssetDelete={async (id: string) => {
-        //   await delteFromStorage(id)
-        //   return
-        // }}/>
-      />
+    <div>
+      <div className="logout">
+        <Logout/>
+      </div>
+      <div className="tldraw">
+        <Tldraw
+          showPages={false}
+          disableAssets={false}
+          showMultiplayerMenu={true}
+          onAssetCreate={onAssetCreate}
+          onAssetDelete={onAssetDelete}
+          {...events}
+        />
+      </div>
     </div>
   )
 }

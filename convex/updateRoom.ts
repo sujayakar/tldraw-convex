@@ -1,5 +1,5 @@
+import { TDShape, TDBinding, TDAsset } from "./TDShape";
 import { mutation } from "./_generated/server"
-import type { TDAsset, TDBinding, TDShape, TDUser, TldrawApp } from '@tldraw/tldraw'
 
 export default mutation(async (
     {db, auth},
@@ -63,7 +63,7 @@ export default mutation(async (
                 await db.replace(existing._id, { tid: id, asset });
             }
         } else {
-            await db.insert("binding", { tid: id, asset });
+            await db.insert("assets", { tid: id, asset });
         }
     }
 });

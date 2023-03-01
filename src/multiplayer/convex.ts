@@ -1,4 +1,4 @@
 import { ConvexReactClient } from "convex/react";
-import clientConfig from "../../convex/_generated/clientConfig";
 
-export const convex = new ConvexReactClient(clientConfig, {unsavedChangesWarning: false});
+const address = import.meta.env.VITE_CONVEX_URL;
+export const convex = new ConvexReactClient(address, {unsavedChangesWarning: false});
