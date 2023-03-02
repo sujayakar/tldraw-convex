@@ -94,6 +94,7 @@ function Editor({ roomId }: { roomId: string }) {
       </div>
       <div className="tldraw">
         <Tldraw
+          darkMode={false}
           showPages={false}
           disableAssets={false}
           showMultiplayerMenu={true}
