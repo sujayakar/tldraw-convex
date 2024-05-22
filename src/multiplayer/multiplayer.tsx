@@ -64,7 +64,7 @@ function Logout() {
 
 function Editor({ roomId }: { roomId: string }) {
   const { error, ...events } = useMultiplayerState(roomId);
-  if (error) return <div>Error: {error.message}</div>;
+  if (error) return <div>Error: {(error as any).message}</div>;
 
   const [app, setApp] = React.useState<TldrawApp>();
   const handleMount = React.useCallback(

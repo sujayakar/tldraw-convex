@@ -8,6 +8,8 @@ export default mutation({
     shapes: v.any(),
     bindings: v.any(),
     assets: v.any(),
+
+    mutationId: v.number(),
   },
   handler: async (ctx, args) => {
     const user = await ctx.auth.getUserIdentity();

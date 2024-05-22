@@ -20,6 +20,6 @@ export default query({
         doc.asset,
       ]),
     );
-    return { shapes, bindings, assets };
+    return { shapes, bindings, assets, mutationId: null as null | number };
   },
 });
