@@ -6,9 +6,8 @@ import type {
   TldrawApp,
 } from "@tldraw/tldraw";
 import { OptimisticLocalStore } from "convex/browser";
-import React, { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { convex } from "./convex";
 import useSingleFlight from "./useSingleFlight";
 import { api } from "convex/_generated/api";
 import { useConvex, useMutation } from "convex/react";
@@ -32,19 +31,13 @@ function mergeUpdates<V>(
 
 export function useMultiplayerState(roomId: string) {
   const [app, setApp] = useState<TldrawApp>();
-  const [error, setError] = useState<Error>();
-  const [loading, setLoading] = useState(true);
 
-  // https://liveblocks.io/blog/how-to-build-undo-redo-in-a-multiplayer-environment
-  const onUndo = () => {
-    throw new Error("Undo TODO");
-  };
-  const onRedo = () => {
-    throw new Error("Redo TODO");
-  };
-  const rIsPaused = useRef(false);
-
-  // Callbacks --------------
+  const onUndo = useCallback(() => {
+    throw new Error("Undo unimplemented");
+  }, []);
+  const onRedo = useCallback(() => {
+    throw new Error("Redo unimplemented");
+  }, []);
 
   // Put the state into the window, for debugging.
   const onMount = useCallback(
@@ -57,9 +50,46 @@ export function useMultiplayerState(roomId: string) {
     [roomId],
   );
 
-  // Room fetching and updating.
+  const rIsPaused = useRef(false);
+  const onSessionStart = useCallback(() => {
+    rIsPaused.current = true;
+  }, []);
+  const onSessionEnd = useCallback(() => {
+    rIsPaused.current = false;
+  }, []);
+
+  const { loading, onChangePage } = useConvexRoom(app);
+  const onChangePresence = useConvexPresence(app);
+
+  const clear = useMutation(api.clear.default);
+  useHotkeys(
+    "ctrl+shift+l;,⌘+shift+l",
+    () => {
+      if (window.confirm("Reset the document?")) {
+        clear();
+      }
+    },
+    [],
+  );
+
+  return {
+    onUndo,
+    onRedo,
+    onMount,
+    onSessionStart,
+    onSessionEnd,
+    onChangePage,
+    onChangePresence,
+    error: undefined,
+    loading,
+  };
+}
+
+function useConvexRoom(app?: TldrawApp) {
+  const convex = useConvex();
   const initialZoom = useRef(false);
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
     if (!app) {
       return;
     }
@@ -89,8 +119,6 @@ export function useMultiplayerState(roomId: string) {
     };
   }, [app, convex]);
 
-  // Update the live shapes when the app's shapes change.
-  const convexClient = useConvex();
   const updateRoom = useMutation(api.updateRoom.default);
   const flightStatus = useRef({
     inflightRequestId: null as null | number,
@@ -106,7 +134,7 @@ export function useMultiplayerState(roomId: string) {
       bindings: Record<string, any>,
       assets: Record<string, any>,
     ) => {
-      const internalClient = (convexClient as any).sync;
+      const internalClient = (convex as any).sync;
       const optimisticUpdate = (
         localQueryStore: OptimisticLocalStore,
         args: {
@@ -198,7 +226,7 @@ export function useMultiplayerState(roomId: string) {
       })();
       return firstReq;
     },
-    [convexClient, updateRoom],
+    [convex, updateRoom],
   );
 
   const onChangePage = useCallback(
@@ -226,8 +254,12 @@ export function useMultiplayerState(roomId: string) {
     [updateRoom],
   );
 
-  // Presence fetching and updating.
-  React.useEffect(() => {
+  return { loading, onChangePage };
+}
+
+function useConvexPresence(app?: TldrawApp) {
+  const convex = useConvex();
+  useEffect(() => {
     if (!app) {
       return;
     }
@@ -255,42 +287,11 @@ export function useMultiplayerState(roomId: string) {
 
   const updatePresence = useMutation(api.updatePresence.default);
   const tryUpdatePresence = useSingleFlight(updatePresence);
-
   const onChangePresence = useCallback(
     (app: TldrawApp, user: TDUser) => {
       tryUpdatePresence({ tid: app.room?.userId, presence: user });
     },
     [tryUpdatePresence],
   );
-
-  const onSessionStart = React.useCallback(() => {
-    rIsPaused.current = true;
-  }, []);
-
-  const onSessionEnd = React.useCallback(() => {
-    rIsPaused.current = false;
-  }, []);
-
-  const clear = useMutation(api.clear.default);
-  useHotkeys(
-    "ctrl+shift+l;,⌘+shift+l",
-    () => {
-      if (window.confirm("Reset the document?")) {
-        clear();
-      }
-    },
-    [],
-  );
-
-  return {
-    onUndo,
-    onRedo,
-    onMount,
-    onSessionStart,
-    onSessionEnd,
-    onChangePage,
-    onChangePresence,
-    error,
-    loading,
-  };
+  return onChangePresence;
 }

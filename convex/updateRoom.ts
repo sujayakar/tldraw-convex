@@ -1,6 +1,7 @@
-import { v } from "convex/values";
+import { Infer, v } from "convex/values";
 import { TDShape, TDBinding, TDAsset } from "./TDShape";
 import { mutation } from "./_generated/server";
+import { asset, binding, shape } from "./schema";
 
 export default mutation({
   args: {
@@ -15,9 +16,9 @@ export default mutation({
       return;
     }
 
-    const shapes = args.shapes as Record<string, TDShape | null>;
-    const bindings = args.bindings as Record<string, TDBinding | null>;
-    const assets = args.assets as Record<string, TDAsset | null>;
+    const shapes = args.shapes as Record<string, Infer<typeof shape>>;
+    const bindings = args.bindings as Record<string, Infer<typeof binding>>;
+    const assets = args.assets as Record<string, Infer<typeof asset>>;
 
     for (const [id, shape] of Object.entries(shapes)) {
       const existing = await ctx.db
@@ -58,6 +59,13 @@ export default mutation({
     }
 
     for (const [id, asset] of Object.entries(assets)) {
+      // For some reason TLDraw hands us assets with a `.name` field instead of `.fileName`.
+      const assetAny = asset as any;
+      if (asset && assetAny.name) {
+        assetAny.fileName = assetAny.name;
+        delete assetAny.name;
+      }
+
       const existing = await ctx.db
         .query("assets")
         .withIndex("tid", (q) => q.eq("tid", id))

@@ -1,7 +1,7 @@
 import { query } from "./_generated/server";
 
 export default query({
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const shapes = Object.fromEntries(
       (await ctx.db.query("shapes").collect()).map((doc) => [
         doc.tid,

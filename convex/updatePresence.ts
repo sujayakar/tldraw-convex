@@ -1,10 +1,11 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
+import { presence } from "./schema";
 
 export default mutation({
   args: {
     tid: v.optional(v.string()),
-    presence: v.any(),
+    presence,
   },
   handler: async (ctx, args) => {
     const user = await ctx.auth.getUserIdentity();
