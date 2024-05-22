@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useAuth0 } from '@auth0/auth0-react'
-import { TDUserStatus, Tldraw, TldrawApp } from '@tldraw/tldraw'
-import { useConvex, useMutation } from 'convex/_generated/react'
-import * as React from 'react'
-import { RoomProvider } from './liveblocks.config'
-import { useMultiplayerState } from './useMultiplayerState'
+import { useAuth0 } from "@auth0/auth0-react";
+import { TDUserStatus, Tldraw, TldrawApp } from "@tldraw/tldraw";
+import * as React from "react";
+import { RoomProvider } from "./liveblocks.config";
+import { useMultiplayerState } from "./useMultiplayerState";
+import { useMutation } from "convex/react";
+import { api } from "convex/_generated/api";
 
-const roomId = 'mp-test-8'
+const roomId = "mp-test-8";
 
 /*
 This example shows how to integrate TLDraw with a multiplayer room
@@ -26,12 +27,12 @@ export function Multiplayer() {
     <RoomProvider
       id={roomId}
       initialPresence={{
-        id: 'DEFAULT_ID',
+        id: "DEFAULT_ID",
         user: {
-          id: 'DEFAULT_ID',
+          id: "DEFAULT_ID",
           status: TDUserStatus.Connecting,
           activeShapes: [],
-          color: 'black',
+          color: "black",
           point: [0, 0],
           selectedIds: [],
         },
@@ -39,19 +40,21 @@ export function Multiplayer() {
     >
       <Editor roomId={roomId} />
     </RoomProvider>
-  )
+  );
 }
 
 function Logout() {
   const { logout, user } = useAuth0();
   if (!user) {
-    return <></>
+    return <></>;
   }
   return (
     <div>
       <button
         className="logoutButton"
-        onClick={() => logout({ returnTo: window.location.origin })}
+        onClick={() =>
+          logout({ logoutParams: { returnTo: window.location.origin } })
+        }
       >
         Logout ({user!.name})
       </button>
@@ -60,29 +63,35 @@ function Logout() {
 }
 
 function Editor({ roomId }: { roomId: string }) {
-  const { error, ...events } = useMultiplayerState(roomId)
-  if (error) return <div>Error: {error.message}</div>
+  const { error, ...events } = useMultiplayerState(roomId);
+  if (error) return <div>Error: {error.message}</div>;
 
   const [app, setApp] = React.useState<TldrawApp>();
-  const handleMount = React.useCallback((app: TldrawApp) => {
-    setApp(app);
-  }, [setApp]);
-  const generateUploadUrl = useMutation("storage:generateUploadUrl");
-  const getUrl = useMutation("storage:getUrl");
-  const onAssetCreate = React.useCallback(async (app: TldrawApp, file: File, id: string) => {
-    const uploadUrl = await generateUploadUrl();
-    console.log("uploading", uploadUrl, file);
-    const result = await fetch(uploadUrl, {
-      method: "POST",
-      headers: {"Content-Type": file.type},
-      body: file,
-    });
-    const { storageId } = await result.json();
-    console.log("storageId", storageId);
-    const url = await getUrl(storageId);
-    console.log("url", url);
-    return url!;
-  }, []);
+  const handleMount = React.useCallback(
+    (app: TldrawApp) => {
+      setApp(app);
+    },
+    [setApp],
+  );
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const getUrl = useMutation(api.storage.getUrl);
+  const onAssetCreate = React.useCallback(
+    async (app: TldrawApp, file: File, id: string) => {
+      const uploadUrl = await generateUploadUrl();
+      console.log("uploading", uploadUrl, file);
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = await result.json();
+      console.log("storageId", storageId);
+      const url = await getUrl({ storageId });
+      console.log("url", url);
+      return url!;
+    },
+    [],
+  );
   const onAssetDelete = React.useCallback((app: TldrawApp, id: string) => {
     console.log("deleting", id);
     return true;
@@ -90,7 +99,7 @@ function Editor({ roomId }: { roomId: string }) {
   return (
     <div>
       <div className="logout">
-        <Logout/>
+        <Logout />
       </div>
       <div className="tldraw">
         <Tldraw
@@ -104,5 +113,5 @@ function Editor({ roomId }: { roomId: string }) {
         />
       </div>
     </div>
-  )
+  );
 }

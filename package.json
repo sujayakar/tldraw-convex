@@ -11,20 +11,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm-run-all init dev:init --parallel dev:server dev:client",
+    "dev": "npm-run-all --parallel dev:server dev:client",
     "build": "vite build",
-    "init": "convex init",
     "dev:server": "convex dev",
     "dev:client": "vite --open --clearScreen false",
-    "dev:init": "convex dev --once"
+    "predev": "convex dev --until-success"
   },
   "dependencies": {
-    "@auth0/auth0-react": "^1.12.0",
+    "@auth0/auth0-react": "^2.2.4",
     "@liveblocks/client": "^0.17.7",
     "@liveblocks/react": "^0.17.7",
     "@tldraw/core": "1.20.2",
     "@tldraw/tldraw": "1.26.3",
-    "convex": "^0.9.1",
+    "convex": "1.12.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.3.0",
