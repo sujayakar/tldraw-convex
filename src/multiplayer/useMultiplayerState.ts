@@ -5,13 +5,11 @@ import type {
   TDUser,
   TldrawApp,
 } from "@tldraw/tldraw";
-import { OptimisticLocalStore } from "convex/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import useSingleFlight from "./useSingleFlight";
 import { api } from "convex/_generated/api";
-import { Watch, useConvex, useMutation, useQuery } from "convex/react";
-import { FunctionReturnType } from "convex/server";
+import { useConvex, useMutation } from "convex/react";
 import { ConvexRoomManager } from "./ConvexRoomManager";
 import { removeUndefinedFields } from "./util";
 

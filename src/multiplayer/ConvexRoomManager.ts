@@ -75,7 +75,7 @@ export class ConvexRoomManager {
     if (!this.inflightMutationId && this.hasBufferedMutation()) {
       const mutationId = this.nextMutationId++;
       this.inflightMutationId = mutationId;
-      const args = { mutationId, ...this.bufferedMutation };
+      const args = this.bufferedMutation;
       this.bufferedMutation = { shapes: {}, bindings: {}, assets: {} };
 
       console.log("Kicking off", mutationId, args);
